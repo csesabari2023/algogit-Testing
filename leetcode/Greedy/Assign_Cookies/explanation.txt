@@ -1,0 +1,110 @@
+Below is a clear, step‑by‑step walk‑through of the **greedy, two‑pointer** strategy that the code implements (the code itself is a common solution to the “Assign Cookies” problem on LeetCode).
+
+---
+
+## 1. What the problem asks for  
+We have two lists:
+
+| List | Meaning |
+|------|---------|
+| `g`  | “Greed factor” of each child – the minimum cookie size that satisfies that child. |
+| `s`  | Size of each cookie that is available. |
+
+We want to **give at most one cookie to each child** so that the maximum possible number of children are satisfied.
+
+---
+
+## 2. Why a greedy, sorted approach works  
+
+- **Sorting** both lists puts them in ascending order.  
+- If we always try to satisfy the *least greedy* child with the *smallest cookie that works*, we leave larger cookies for the more greedy children later.  
+- Any other strategy that gives a larger cookie to a less greedy child can only reduce the total number of satisfied children, never increase it.
+
+This is the classic “greedy” pattern: at each step make the locally optimal choice (give the smallest cookie that can satisfy the current child), and that leads to a globally optimal solution.
+
+---
+
+## 3. Two‑pointer traversal  
+
+1. **Sort the arrays**  
+   ```cpp
+   sort(g.begin(), g.end());   // children’s greed, ascending
+   sort(s.begin(), s.end());   // cookies’ sizes, ascending
+   ```
+
+2. **Initialize pointers and a counter**  
+   ```cpp
+   int j = 0;       // index into g – the current child we’re trying to satisfy
+   int count = 0;   // number of satisfied children so far
+   ```
+
+3. **Iterate over cookies (outer loop)**  
+   ```cpp
+   for (int i = 0; i < ssize; ++i) {
+       if (j >= gsize) break;          // all children satisfied – stop early
+   ```
+
+4. **Try to satisfy the current child**  
+   ```cpp
+       if (s[i] >= g[j]) {             // the cookie is big enough
+           ++count;                    // child is satisfied
+           ++j;                        // move to the next child
+       }
+   ```
+   *If the cookie is **too small**, we simply skip it (no action, the next cookie will be tried on the same child).*
+
+5. **Return the result after the loop**  
+   ```cpp
+   return count;
+   ```
+
+---
+
+## 4. Why this works in practice
+
+- **Every cookie is examined once** → O(n) after sorting.  
+- **Each child is considered only when we find a cookie that can satisfy them**.  
+- Because the lists are sorted, once a cookie fails to satisfy the current child, it will fail for *all* remaining (more greedy) children, so we safely discard it and move on.
+
+---
+
+## 5. Time & Space Complexity
+
+| Metric | Complexity |
+|--------|------------|
+| Sorting `g` | `O(gSize log gSize)` |
+| Sorting `s` | `O(sSize log sSize)` |
+| Two‑pointer scan | `O(gSize + sSize)` |
+| **Overall** | `O((gSize + sSize) log (gSize + sSize))` |
+| Extra space | `O(1)` (in‑place sorting, aside from the input containers) |
+
+---
+
+## 6. Common pitfalls (and a quick fix)
+
+1. **Missing closing braces** – In the provided snippet the `for` loop isn’t closed before the `return`.  
+2. **Return inside the loop** – The `return count;` must be outside the `for` loop; otherwise the function returns after processing only the first cookie.
+
+A correct, minimal version would look like:
+
+```cpp
+int findContentChildren(vector<int>& g, vector<int>& s) {
+    sort(g.begin(), g.end());
+    sort(s.begin(), s.end());
+
+    int j = 0, count = 0;
+    for (int i = 0; i < (int)s.size() && j < (int)g.size(); ++i) {
+        if (s[i] >= g[j]) {
+            ++count;
+            ++j;
+        }
+    }
+    return count;
+}
+```
+
+---
+
+### Bottom line  
+
+The code demonstrates the classic greedy algorithm: **sort → two‑pointer scan → assign the smallest possible cookie to the least greedy unsatisfied child**. This guarantees the maximum number of satisfied children while running in optimal time.
